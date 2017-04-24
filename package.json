@@ -35,17 +35,22 @@
     "type-is": "^1.6.9"
   },
   "devDependencies": {
+    "eslint": "^3.19.0",
+    "babel-eslint": "^7.2.3",
+
     "connect": "^3.4.0",
-    "coveralls": "^2.11.4",
     "express": "^4.13.3",
+    "koa": "^2.2.0",
     "hapi": "^10.0.0",
-    "istanbul": "^0.4.0",
-    "mocha": "^2.3.0",
-    "mocha-lcov-reporter": "^1.0.0",
     "restify": "^4.0.3",
+
+    "mocha": "^2.3.0",
     "should": "^7.1.0",
     "sinon": "^1.17.2",
-    "supertest": "^1.1.0"
+    "istanbul": "^0.4.0",
+    "supertest": "^1.1.0",
+    "coveralls": "^2.11.4",
+    "mocha-lcov-reporter": "^1.0.0"
   },
   "scripts": {
     "test": "node_modules/mocha/bin/_mocha -u exports -R spec test test/lib test/fittings",
