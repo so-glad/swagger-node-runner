@@ -77,6 +77,14 @@ function Runner(appJsConfig, cb) {
     return require('./lib/restify_middleware')(this);
   };
 
+  this.koaMiddleware = function koaMiddleware() {
+    return require('./lib/koa_async_middleware')(this);
+  };
+
+  this.koa1Middleware = function koaMiddleware() {
+    return require('./lib/koa_generator_middleware')(this);
+  };
+
   this.sailsMiddleware = function sailsMiddleware() {
     return require('./lib/sails_middleware')(this);
   };
