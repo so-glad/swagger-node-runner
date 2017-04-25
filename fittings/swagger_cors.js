@@ -1,1 +1,2 @@
-export default from './cors';
+import create from './cors';
+export default create;

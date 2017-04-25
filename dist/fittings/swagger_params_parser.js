@@ -3,7 +3,6 @@
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.default = create;
 
 var _debug2 = require('debug');
 
@@ -139,7 +138,7 @@ var skipParse = function skipParse(options, req) {
     return typeof options.type !== 'function' && !Boolean((0, _typeIs.is)(req, options.type));
 };
 
-function create(fittingDef, bagpipes) {
+var create = function create(fittingDef, bagpipes) {
     debug('config: %j', fittingDef);
 
     _lodash2.default.defaults(fittingDef, {
@@ -171,4 +170,6 @@ function create(fittingDef, bagpipes) {
             next(null, params);
         });
     };
-}
+};
+
+exports.default = create;

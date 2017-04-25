@@ -112,7 +112,7 @@ const parseRequest = (req, fittingDef, cb) => {
 const skipParse = (options, req) => (typeof options.type !== 'function' && !Boolean(typeis(req, options.type)) );
 
 
-export default function create(fittingDef, bagpipes) {
+const create = (fittingDef, bagpipes) => {
     debug('config: %j', fittingDef);
 
     _.defaults(fittingDef, {
@@ -144,4 +144,6 @@ export default function create(fittingDef, bagpipes) {
             next(null, params);
         });
     };
-}
+};
+
+export default create;

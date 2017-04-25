@@ -5,7 +5,7 @@ import util from 'util';
 
 const debug = _debug('swagger:json_error_handler');
 
-export default function create(fittingDef, bagpipes) {
+const create = (fittingDef, bagpipes) => {
     debug('config: %j', fittingDef);
     return (context, next) => {
         if (!util.isError(context.error)) {
@@ -64,4 +64,6 @@ export default function create(fittingDef, bagpipes) {
             next(null, JSON.stringify(body));
         }
     };
-}
+};
+
+export default create;

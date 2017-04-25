@@ -3,7 +3,6 @@
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.default = create;
 
 var _debug2 = require('debug');
 
@@ -18,11 +17,14 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 var debug = (0, _debug3.default)('swagger:cors');
 
 // config options: https://www.npmjs.com/package/cors
-function create(fittingDef, bagpipes) {
+
+var create = function create(fittingDef, bagpipes) {
     debug('config: %j', fittingDef);
     var middleware = (0, _cors2.default)(fittingDef);
     return function (context, cb) {
         debug('exec');
         middleware(context.request, context.response, cb);
     };
-}
+};
+
+exports.default = create;

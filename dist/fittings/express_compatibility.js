@@ -3,7 +3,6 @@
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.default = create;
 
 var _debug2 = require('debug');
 
@@ -54,10 +53,12 @@ var expressCompatibility = function expressCompatibility(req, res, next) {
     next();
 };
 
-function create(fittingDef, bagpipes) {
+var create = function create(fittingDef, bagpipes) {
     debug('config: %j', fittingDef);
     return function (context, cb) {
         debug('exec');
         expressCompatibility(context.request, context.response, cb);
     };
-}
+};
+
+exports.default = create;

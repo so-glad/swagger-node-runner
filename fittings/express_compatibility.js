@@ -40,10 +40,12 @@ const expressCompatibility = (req, res, next) => {
     next();
 };
 
-export default function create(fittingDef, bagpipes) {
+const create = (fittingDef, bagpipes) => {
     debug('config: %j', fittingDef);
     return (context, cb) => {
         debug('exec');
         expressCompatibility(context.request, context.response, cb);
     };
-}
+};
+
+export default create;

@@ -1,33 +1,39 @@
 'use strict';
 
-var debug = require('debug')('swagger:swagger_validator');
-var _ = require('lodash');
-var util = require('util');
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
 
-module.exports = function create(fittingDef, bagpipes) {
+var _debug2 = require('debug');
 
-  debug('config: %j', fittingDef);
+var _debug3 = _interopRequireDefault(_debug2);
 
-  return function swagger_validator(context, cb) {
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-    debug('exec');
+var debug = (0, _debug3.default)('swagger:swagger_validator');
 
-    // todo: add support for validating accept header against produces declarations
-    // see: http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html
-    //var accept = req.headers['accept'];
-    //var produces = _.union(operation.api.definition.produces, operation.definition.produces);
+var create = function create(fittingDef, bagpipes) {
+    debug('config: %j', fittingDef);
+    return function (context, cb) {
+        debug('exec');
 
-    if (context.request.swagger.operation) {
-      var validateResult = context.request.swagger.operation.validateRequest(context.request);
-      if (validateResult.errors.length) {
-        var error = new Error('Validation errors');
-        error.statusCode = 400;
-        error.errors = validateResult.errors;
-      }
-    } else {
-      debug('not a swagger operation, will not validate response');
-    }
-
-    cb(error);
-  };
+        // todo: add support for validating accept header against produces declarations
+        // see: http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html
+        //var accept = req.headers['accept'];
+        //var produces = _.union(operation.api.definition.produces, operation.definition.produces);
+        var error = null;
+        if (context.request.swagger.operation) {
+            var validateResult = context.request.swagger.operation.validateRequest(context.request);
+            if (validateResult.errors.length) {
+                error = new Error('Validation errors');
+                error.statusCode = 400;
+                error.errors = validateResult.errors;
+            }
+        } else {
+            debug('not a swagger operation, will not validate response');
+        }
+        cb(error);
+    };
 };
+
+exports.default = create;

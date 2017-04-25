@@ -3,7 +3,6 @@
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.default = create;
 
 var _debug2 = require('debug');
 
@@ -17,7 +16,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 var debug = (0, _debug3.default)('swagger:json_error_handler');
 
-function create(fittingDef, bagpipes) {
+var create = function create(fittingDef, bagpipes) {
     debug('config: %j', fittingDef);
     return function (context, next) {
         if (!_util2.default.isError(context.error)) {
@@ -72,4 +71,6 @@ function create(fittingDef, bagpipes) {
             next(null, JSON.stringify(body));
         }
     };
-}
+};
+
+exports.default = create;
