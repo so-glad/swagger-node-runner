@@ -1,17 +1,16 @@
 'use strict';
 
-var debug = require('debug')('swagger:cors');
-var CORS = require('cors');
+import _debug from 'debug';
+import CORS from 'cors';
+
+const debug = _debug('swagger:cors');
 
 // config options: https://www.npmjs.com/package/cors
-
-module.exports = function create(fittingDef, bagpipes) {
-
-  debug('config: %j', fittingDef);
-  var middleware = CORS(fittingDef);
-
-  return function cors(context, cb) {
-    debug('exec');
-    middleware(context.request, context.response, cb);
-  }
-};
+export default function create(fittingDef, bagpipes) {
+    debug('config: %j', fittingDef);
+    const middleware = CORS(fittingDef);
+    return (context, cb) => {
+        debug('exec');
+        middleware(context.request, context.response, cb);
+    };
+}

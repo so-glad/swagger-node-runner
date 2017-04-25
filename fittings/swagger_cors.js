@@ -1,1 +1,1 @@
-module.exports = require('./cors');
+export default from './cors';
