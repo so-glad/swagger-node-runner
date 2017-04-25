@@ -125,4 +125,4 @@ var create = function create(fittingDef, bagpipes) {
     };
 };
 
-exports.default = create;
+module.exports = create;

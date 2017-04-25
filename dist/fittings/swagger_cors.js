@@ -10,4 +10,4 @@ var _cors2 = _interopRequireDefault(_cors);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-exports.default = _cors2.default;
+module.exports = _cors2.default;
