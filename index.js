@@ -68,29 +68,29 @@ function Runner(appJsConfig, cb) {
   };
 
   this.connectMiddleware = function connectMiddleware() {
-    return require('./lib/connect_middleware')(this);
+    return require('./dist/lib/connect_middleware')(this);
   };
 
   this.expressMiddleware = this.connectMiddleware;
 
   this.restifyMiddleware = function restifyMiddleware() {
-    return require('./lib/restify_middleware')(this);
+    return require('./dist/lib/restify_middleware')(this);
   };
 
   this.koaMiddleware = function koaMiddleware() {
-    return require('./lib/koa_async_middleware')(this);
+    return require('./dist/lib/koa_async_middleware')(this);
   };
 
   this.koa1Middleware = function koaMiddleware() {
-    return require('./lib/koa_generator_middleware')(this);
+    return require('./dist/lib/koa_generator_middleware')(this);
   };
 
   this.sailsMiddleware = function sailsMiddleware() {
-    return require('./lib/sails_middleware')(this);
+    return require('./dist/lib/sails_middleware')(this);
   };
 
   this.hapiMiddleware = function hapiMiddleware() {
-    return require('./lib/hapi_middleware')(this);
+    return require('./dist/lib/hapi_middleware')(this);
   };
 
   this.defaultErrorHandler = function() {
@@ -264,7 +264,7 @@ function createPipes(self) {
   var fittingsDirs = (config.fittingsDirs || DEFAULT_FITTINGS_DIRS).map(function(dir) {
     return path.resolve(config.appRoot, dir);
   });
-  var swaggerNodeFittingsDir = path.resolve(__dirname, './fittings');
+  var swaggerNodeFittingsDir = path.resolve(__dirname, './dist/fittings');
   fittingsDirs.push(swaggerNodeFittingsDir);
 
   var viewsDirs = (config.viewsDirs || DEFAULT_VIEWS_DIRS).map(function(dir) {
