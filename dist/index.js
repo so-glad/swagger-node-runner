@@ -387,18 +387,18 @@ _util2.default.inherits(Runner, _events.EventEmitter);
 
 var _class = function _class() {
     _classCallCheck(this, _class);
+};
 
-    this.create = function (config, cb) {
+_class.create = function (config, cb) {
 
-        if (!_lodash2.default.isFunction(cb)) {
-            throw new Error('callback is required');
-        }
-        if (!config || !config.appRoot) {
-            return cb(new Error('config.appRoot is required'));
-        }
+    if (!_lodash2.default.isFunction(cb)) {
+        throw new Error('callback is required');
+    }
+    if (!config || !config.appRoot) {
+        return cb(new Error('config.appRoot is required'));
+    }
 
-        new Runner(config, cb);
-    };
+    new Runner(config, cb);
 };
 
 exports.default = _class;

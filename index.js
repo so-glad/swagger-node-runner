@@ -333,7 +333,7 @@ class Runner {
 util.inherits(Runner, EventEmitter);
 
 export default class {
-    create = (config, cb) => {
+    static create = (config, cb) => {
 
         if (!_.isFunction(cb)) {
             throw new Error('callback is required');
