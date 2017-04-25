@@ -121,7 +121,7 @@ var Runner = function () {
         this.bagpipes = null;
 
         this.resolveAppPath = function (to) {
-            _path2.default.resolve(_this.appJsConfig.appRoot, to);
+            return _path2.default.resolve(_this.appJsConfig.appRoot, to);
         };
 
         this.connectMiddleware = function () {

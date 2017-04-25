@@ -150,9 +150,7 @@ class Runner {
             });
     }
 
-    resolveAppPath = (to) => {
-        path.resolve(this.appJsConfig.appRoot, to);
-    };
+    resolveAppPath = (to) => path.resolve(this.appJsConfig.appRoot, to);
 
     connectMiddleware = () => {
         return _connectMiddleware(this);
