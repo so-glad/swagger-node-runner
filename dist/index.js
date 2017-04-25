@@ -135,11 +135,11 @@ var Runner = function () {
         };
 
         this.koaMiddleware = function () {
-            return (0, _koa_async_middleware2.default)(_this);
+            return new _koa_async_middleware2.default(_this);
         };
 
         this.koa1Middleware = function () {
-            return (0, _koa_generator_middleware2.default)(_this);
+            return new _koa_generator_middleware2.default(_this);
         };
 
         this.sailsMiddleware = function () {

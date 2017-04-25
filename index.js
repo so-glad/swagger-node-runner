@@ -11,8 +11,8 @@ import util from 'util';
 
 import _connectMiddleware from './lib/connect_middleware';
 import _restifyMiddleware from './lib/restify_middleware';
-import _koa1Middleware from './lib/koa_generator_middleware';
-import _koaMiddleware from './lib/koa_async_middleware';
+import Koa1Middleware from './lib/koa_generator_middleware';
+import KoaMiddleware from './lib/koa_async_middleware';
 import _hapiMiddleware from './lib/hapi_middleware';
 import _sailsMiddleware from './lib/sails_middleware';
 
@@ -163,11 +163,11 @@ class Runner {
     };
 
     koaMiddleware = () => {
-        return _koaMiddleware(this);
+        return new KoaMiddleware(this);
     };
 
     koa1Middleware = () => {
-        return _koa1Middleware(this);
+        return new Koa1Middleware(this);
     };
 
     sailsMiddleware = () => {
