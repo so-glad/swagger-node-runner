@@ -1,5 +1,6 @@
-test
+.babelrc
+.eslintrc.json
 .gitignore
-.jshintrc
 .npmignore
 .travis.yml
+src

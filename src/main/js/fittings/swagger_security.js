@@ -5,7 +5,7 @@ import async from 'async';
 import _ from 'lodash';
 import path from 'path';
 
-import helpers from '../lib/helpers';
+import helpers from '../middleware/helpers';
 
 const debug = _debug('swagger:swagger_security');
 const getScopeOrAPIKey = (req, securityDefinition, name, securityRequirement) => {

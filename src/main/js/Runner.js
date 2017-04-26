@@ -1,80 +1,89 @@
 'use strict';
 
+/**
+ * @author palmtale
+ * @since 2017/4/26.
+ */
+
+
 import _ from 'lodash';
+import _debug from 'debug';
 import path from 'path';
+import util from 'util';
 import Config from 'config';
 import sway from 'sway';
-import _debug from 'debug';
 import bagpipes from 'bagpipes';
 import {EventEmitter} from 'events';
-import util from 'util';
 
-import _connectMiddleware from './lib/connect_middleware';
-import _restifyMiddleware from './lib/restify_middleware';
-import Koa1Middleware from './lib/koa_generator_middleware';
-import KoaMiddleware from './lib/koa_async_middleware';
-import _hapiMiddleware from './lib/hapi_middleware';
-import _sailsMiddleware from './lib/sails_middleware';
+
+import _connectMiddleware from './middleware/Connect';
+import ExpressMiddleware from './middleware/Express';
+import _restifyMiddleware from './middleware/Restify';
+import Koa1Middleware from './middleware/koa_generator_middleware';
+import KoaMiddleware from './middleware/KoaAsync';
+import _hapiMiddleware from './middleware/Hapi';
+import _sailsMiddleware from './middleware/Sails';
 
 /*
-Runner properties:
-  config
-  swagger
-  api  // (sway)
-  connectMiddleware()
-  resolveAppPath()
-  securityHandlers
-  bagpipes
+ Runner properties:
+ config
+ swagger
+ api  // (sway)
+ connectMiddleware()
+ resolveAppPath()
+ securityHandlers
+ bagpipes
 
-Runner events:
+ Runner events:
  responseValidationError
 
-config properties:
-  appRoot
-  mockMode
-  configDir
-  controllersDirs
-  mockControllersDirs
-  securityHandlers
+ config properties:
+ appRoot
+ mockMode
+ configDir
+ controllersDirs
+ mockControllersDirs
+ securityHandlers
  */
 
 const debug = _debug('swagger');
 
 const SWAGGER_SELECTED_PIPE = 'x-swagger-pipe';
 const SWAGGER_ROUTER_CONTROLLER = 'x-swagger-router-controller';
-const DEFAULT_FITTINGS_DIRS = [ 'api/fittings' ];
-const DEFAULT_VIEWS_DIRS = [ 'api/views' ];
+const DEFAULT_FITTINGS_DIRS = ['api/fittings'];
+const DEFAULT_VIEWS_DIRS = ['api/views'];
 const DEFAULT_SWAGGER_FILE = 'api/swagger/swagger.yaml'; // relative to appRoot
 
 /*
-SwaggerNode config priority:
-  1. swagger_* environment vars
-  2. config passed to create()
-  3. read from swagger node in default.yaml in config directory
-  4. defaults in this file
+ SwaggerNode config priority:
+ 1. swagger_* environment vars
+ 2. config passed to create()
+ 3. read from swagger node in default.yaml in config directory
+ 4. defaults in this file
  */
 class Runner {
 
     config = Config.util.cloneDeep(Config);
-    swaggerConfigDefaults = {
-        enforceUniqueOperationId: false,
-        startWithErrors: false,
-        startWithWarnings: true
-    };
-
     appJsConfig = null;
     api = null;
     swagger = null;
     securityHandlers = null;
     bagpipes = null;
 
-    constructor(appJsConfig, callback) {
+    swaggerConfigDefaults = {
+        enforceUniqueOperationId: false,
+        startWithErrors: false,
+        startWithWarnings: true
+    };
+
+    constructor(appJsConfig) {
         EventEmitter.call(this);
         this.appJsConfig = appJsConfig;
-        this.callback = callback;
         // don't override if env var already set
         if (!process.env.NODE_CONFIG_DIR) {
-            if (!appJsConfig.configDir) { appJsConfig.configDir = 'config'; }
+            if (!appJsConfig.configDir) {
+                appJsConfig.configDir = 'config';
+            }
             process.env.NODE_CONFIG_DIR = path.resolve(appJsConfig.appRoot, appJsConfig.configDir);
         }
         this.config.swagger =
@@ -84,73 +93,85 @@ class Runner {
                 appJsConfig,
                 this.readEnvConfig());
         debug('resolved config: %j', this.config);
+    }
 
+    setupSway = async () => {
         const swayOpts = {
-            definition: appJsConfig.swagger || appJsConfig.swaggerFile || this.resolveAppPath(DEFAULT_SWAGGER_FILE)
+            definition: this.appJsConfig.swagger ||
+            this.appJsConfig.swaggerFile || this.resolveAppPath(DEFAULT_SWAGGER_FILE)
         };
 
         debug('initializing Sway');
-        // sway uses Promises
-        sway.create(swayOpts)
-            .then(api => {
+        try{
+            const api = await sway.create(swayOpts);
 
-                debug('validating api');
-                const validateResult = api.validate();
-                debug('done validating api. errors: %d, warnings: %d', validateResult.errors.length, validateResult.warnings.length);
+            debug('validating api');
+            const validateResult = api.validate();
+            debug('done validating api. errors: %d, warnings: %d', validateResult.errors.length, validateResult.warnings.length);
 
-                let errors = validateResult.errors;
-                if (errors && errors.length > 0) {
-                    if (!this.config.swagger.enforceUniqueOperationId) {
-                        errors = errors.filter(err => (err.code !== 'DUPLICATE_OPERATIONID'));
-                    }
-                    if (errors.length > 0) {
-                        if (this.config.swagger.startWithErrors) {
-                            const errorText = JSON.stringify(errors);
-                            console.error(errorText, 2);
-                        } else {
-                            const err = new Error('Swagger validation errors:');
-                            err.validationErrors = errors;
-                            throw err;
-                        }
-                    }
+            let errors = validateResult.errors;
+            if (errors && errors.length > 0) {
+            if (!this.config.swagger.enforceUniqueOperationId) {
+                errors = errors.filter(err => (err.code !== 'DUPLICATE_OPERATIONID'));
+            }
+            if (errors.length > 0) {
+                if (this.config.swagger.startWithErrors) {
+                    const errorText = JSON.stringify(errors);
+                    //TODO think logger would be better than console. Maybe some log facade framework use.
+                    console.error(errorText, 2);
+                } else {
+                    const err = new Error('Swagger validation errors:');
+                    err.validationErrors = errors;
+                    throw err;
                 }
+            }
+        }
 
-                const warnings = validateResult.warnings;
-                if (warnings && warnings.length > 0) {
-                    const warningText = JSON.stringify(warnings);
-                    if (this.config.swagger.startWithWarnings) {
-                        console.error(warningText, 2);
-                    } else {
-                        const err = new Error('Swagger validation warnings:');
-                        err.validationWarnings = warnings;
-                        throw err;
-                    }
+            let warnings = validateResult.warnings;
+            if (warnings && warnings.length > 0) {
+            const warningText = JSON.stringify(warnings);
+            if (this.config.swagger.startWithWarnings) {
+                console.error(warningText, 2);
+            } else {
+                const err = new Error('Swagger validation warnings:');
+                err.validationWarnings = warnings;
+                throw err;
+            }
+        }
+
+            this.api = api;
+            this.swagger = api.definition;
+            this.securityHandlers = this.appJsConfig.securityHandlers ||
+            this.appJsConfig.swaggerSecurityHandlers; // legacy name
+            this.bagpipes = this.createPipes();
+        } catch(err) {
+            console.error('Error in callback! Tossing to global error handler.', err.stack);
+            if (err.validationErrors) {
+                console.error('Details: ');
+                for (let i = 0; i < err.validationErrors.length; i++) {
+                    console.error('\t#' + i + '.: ' + err.validationErrors[i].message +
+                        ' in swagger config at: >' + err.validationErrors[i].path.join('/') + '<');
                 }
-
-                this.api = api;
-                this.swagger = api.definition;
-                this.securityHandlers = appJsConfig.securityHandlers || appJsConfig.swaggerSecurityHandlers; // legacy name
-                this.bagpipes = this.createPipes();
-
-                callback(null, this);
-            })
-            .catch(err => {
-                callback(err);
-            })
-            .catch((err) => {
-                console.error('Error in callback! Tossing to global error handler.', err.stack);
-
-                if (err.validationErrors) {
-                    console.error('Details: ');
-                    for (let i = 0; i < err.validationErrors.length; i++) {
-                        console.error("\t#" + i + ".: " + err.validationErrors[i].message + " in swagger config at: >" + err.validationErrors[i].path.join('/') + "<");
-                    }
-                }
-                process.nextTick(() => { throw err; });
+            }
+            process.nextTick(() => {
+                throw err;
             });
-    }
+        }
+    };
 
     resolveAppPath = (to) => path.resolve(this.appJsConfig.appRoot, to);
+
+    mount = (app) => {
+        let middleware = null;
+
+        if(app.subdomainOffset === 2) { //KOA specification
+            middleware = new KoaMiddleware(this);
+        } else {
+            middleware = new ExpressMiddleware(this);
+        }
+
+        middleware.register(app);
+    };
 
     connectMiddleware = () => {
         return _connectMiddleware(this);
@@ -183,7 +204,7 @@ class Runner {
             debug('default error handler: %s', context.error.message);
             next();
         };
-        return this.bagpipes.createPipeFromFitting(defaultErrorFitting, { name: 'defaultErrorHandler' });
+        return this.bagpipes.createPipeFromFitting(defaultErrorFitting, {name: 'defaultErrorHandler'});
     };
 
     getOperation = (req) => {
@@ -225,7 +246,9 @@ class Runner {
         debug('pipe requested:', pipeName);
 
         // default pipe
-        if (!pipeName) { pipeName = config.defaultPipe; }
+        if (!pipeName) {
+            pipeName = config.defaultPipe;
+        }
 
         if (!pipeName) {
             debug('no default pipe');
@@ -258,7 +281,7 @@ class Runner {
         );
 
         // legacy support: set up a default piping for traditional swagger-node if nothing is specified
-        if (!config.bagpipes || config.bagpipes ==='DEFAULTS_TEST') {
+        if (!config.bagpipes || config.bagpipes === 'DEFAULTS_TEST') {
 
             debug('**** No bagpipes defined in config. Using default setup. ****');
 
@@ -268,8 +291,8 @@ class Runner {
                 _router: {
                     name: 'swagger_router',
                     mockMode: false,
-                    mockControllersDirs: [ 'api/mocks' ],
-                    controllersDirs: [ 'api/controllers' ]
+                    mockControllersDirs: ['api/mocks'],
+                    controllersDirs: ['api/controllers']
                 },
                 _swagger_validate: {
                     name: 'swagger_validator',
@@ -286,7 +309,7 @@ class Runner {
             };
 
             if (config.mapErrorsToJson) {
-                config.bagpipes.swagger_controllers.unshift({ onError: 'json_error_handler' });
+                config.bagpipes.swagger_controllers.unshift({onError: 'json_error_handler'});
             }
         }
 
@@ -330,17 +353,4 @@ class Runner {
 
 util.inherits(Runner, EventEmitter);
 
-export default class {
-    static create = (config, cb) => {
-
-        if (!_.isFunction(cb)) {
-            throw new Error('callback is required');
-        }
-        if (!config || !config.appRoot) {
-            return cb(new Error('config.appRoot is required'));
-        }
-
-        new Runner(config, cb);
-    };
-}
-
+export default Runner;

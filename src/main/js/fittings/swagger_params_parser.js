@@ -8,7 +8,7 @@ import multer from 'multer';
 import _  from 'lodash';
 
 
-import helpers from '../lib/helpers';
+import helpers from '../middleware/helpers';
 const debug = _debug('swagger:swagger_params_parser');
 const debugContent = _debug('swagger:content');
 

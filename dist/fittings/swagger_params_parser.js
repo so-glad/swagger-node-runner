@@ -26,7 +26,7 @@ var _lodash = require('lodash');
 
 var _lodash2 = _interopRequireDefault(_lodash);
 
-var _helpers = require('../lib/helpers');
+var _helpers = require('../middleware/helpers');
 
 var _helpers2 = _interopRequireDefault(_helpers);
 

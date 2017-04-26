@@ -20,7 +20,7 @@ var _path = require('path');
 
 var _path2 = _interopRequireDefault(_path);
 
-var _helpers = require('../lib/helpers');
+var _helpers = require('../middleware/helpers');
 
 var _helpers2 = _interopRequireDefault(_helpers);
 

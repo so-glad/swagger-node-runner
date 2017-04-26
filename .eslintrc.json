@@ -1,6 +1,7 @@
 {
     "parser": "babel-eslint",
     "env": {
+        "node": true,
         "browser": true,
         "commonjs": true,
         "es6": true
@@ -10,9 +11,11 @@
         "sourceType": "module"
     },
     "rules": {
+        "no-console": "off",
         "indent": [
             "error",
-            4
+            4,
+            {"SwitchCase":1}
         ],
         "linebreak-style": [
             "error",
