@@ -23,9 +23,9 @@ export default class extends Abstract {
 
     middleware = async (ctx, next) => {
         const req = ctx.request;
-        const res = ctx.response;
-        const operation = this.runner.getOperation(req);
+        const res = ctx.res;
 
+        const operation = this.runner.getOperation(req);
         if (!operation) {
             const path = this.runner.getPath(req);
             if (!path) {

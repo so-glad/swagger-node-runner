@@ -25,19 +25,19 @@ const parseRequest = (req, fittingDef, cb) => {
 
     req.swagger.operation.parameterObjects.forEach(parameter => {
         switch (parameter.in) {
-        case 'body':
-            shouldParseBody = true;
-            break;
-        case 'formData':
-            shouldParseForm = true;
-            if (parameter.type === 'file') {
-                multFields.push({ name: parameter.name });
-            }
-            break;
+            case 'body':
+                shouldParseBody = true;
+                break;
+            case 'formData':
+                shouldParseForm = true;
+                if (parameter.type === 'file') {
+                    multFields.push({name: parameter.name});
+                }
+                break;
 
-        case 'query':
-            shouldParseQuery = true;
-            break;
+            case 'query':
+                shouldParseQuery = true;
+                break;
         }
     });
 
@@ -98,9 +98,13 @@ const parseRequest = (req, fittingDef, cb) => {
                 debugContent('json parsed req.body:', req.body);
                 return cb();
             }
-            if (skipParse(fittingDef.textOptions, req)) { return cb(); } // hack: see skipParse function
+            if (skipParse(fittingDef.textOptions, req)) {
+                return cb();
+            } // hack: see skipParse function
             bodyParser.text(fittingDef.textOptions)(req, res, (err) => {
-                if (req.body) { debugContent('text parsed req.body:', req.body); }
+                if (req.body) {
+                    debugContent('text parsed req.body:', req.body);
+                }
                 cb(err);
             });
         }
@@ -112,7 +116,7 @@ const parseRequest = (req, fittingDef, cb) => {
 const skipParse = (options, req) => (typeof options.type !== 'function' && !Boolean(typeis(req, options.type)) );
 
 
-const create = (fittingDef, bagpipes) => {
+const create = (fittingDef) => {
     debug('config: %j', fittingDef);
 
     _.defaults(fittingDef, {
@@ -135,7 +139,8 @@ const create = (fittingDef, bagpipes) => {
         const req = context.request;
         parseRequest(req, fittingDef, (err) => {
             if (err) {
-                /* istanbul ignore next */ return next(err);
+                /* istanbul ignore next */
+                return next(err);
             }
             const params = req.swagger.params = {};
             req.swagger.operation.parameterObjects.forEach(parameter => {
@@ -146,4 +151,4 @@ const create = (fittingDef, bagpipes) => {
     };
 };
 
-export default create;
+module.exports = create;

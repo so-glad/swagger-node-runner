@@ -1,50 +1,60 @@
 'use strict';
 
+/**
+ * @author palmtale
+ * @since 2017/4/24.
+ */
 
 import _ from 'lodash';
 import _debug from 'debug';
 import util from 'util';
-import {EventEmitter} from 'events';
+import {EventEmitter}  from 'events';
 
-
-import Middleware from './Abstract';
+import Abstract from './Abstract';
 
 const debug = _debug('swagger');
 const debugContent = _debug('swagger:content');
 
+export default class extends Abstract {
 
-class Connect extends Middleware {
+    constructor(runner) {
+        super(runner);
+    }
 
-    middleware = (req, res, next) => { // flow back to connect pipe
-
+    middleware = function *(next) {
+        const req = this.request;
+        const res = this.response;
         const operation = this.runner.getOperation(req);
+
         if (!operation) {
             const path = this.runner.getPath(req);
             if (!path) {
-                return next();
+                return yield next();
             }
+
             if (!path['x-swagger-pipe'] && req.method !== 'OPTIONS') {
                 const msg = util.format('Path [%s] defined in Swagger, but %s operation is not.', path.path, req.method);
                 const err = new Error(msg);
                 err.statusCode = 405;
-                err.status = err.statusCode; // for Sails, see: https://github.com/theganyo/swagger-node-runner/pull/31
-                const allowedMethods = _.map(path.operationObjects, operation => operation.method.toUpperCase());
+
+                const allowedMethods = _.map(path.operationObjects, (operation) => operation.method.toUpperCase());
                 err.allowedMethods = allowedMethods;
+
                 res.setHeader('Allow', allowedMethods.sort().join(', '));
-                return next(err);
+                return yield next(err);
             }
         }
 
-        this.runner.applyMetadata(req, operation, (err) => {
+        this.runner.applyMetadata(req, operation, async (err) => {
             if (err) { /* istanbul ignore next */
-                return next(err);
+                return await next(err);
             }
 
             const pipe = this.runner.getPipe(req);
             if (!pipe) {
                 const err = new Error('No implementation found for this path.');
                 err.statusCode = 405;
-                return next(err);
+                return await next(err);
             }
 
             const context = {
@@ -52,18 +62,18 @@ class Connect extends Middleware {
                 _errorHandler: this.runner.defaultErrorHandler(),
                 request: req,
                 response: res,
+
                 // user-modifiable values
                 input: undefined,
                 statusCode: undefined,
                 headers: {},
                 output: undefined
             };
-            console.error(context);
-            //function finishConnect
-            context._finish = () => { // must have arity of 2
+
+            context._finish = async () => { // must have arity of 2
                 debugContent('exec', context.error);
                 if (context.error) {
-                    return next(context.error);
+                    return await next(context.error);
                 }
 
                 try {
@@ -76,7 +86,7 @@ class Connect extends Middleware {
 
                     if (context.headers) {
                         debugContent('setting response headers: %j', context.headers);
-                        _.each(context.headers, function (value, name) {
+                        _.each(context.headers, (value, name) => {
                             response.setHeader(name, value);
                         });
                     }
@@ -88,10 +98,11 @@ class Connect extends Middleware {
                         response.end(body);
                     }
 
-                    next();
-                } catch (err) {
+                    await next();
+                }
+                catch (err) {
                     /* istanbul ignore next */
-                    next(err);
+                    await next(err);
                 }
             };
 
@@ -105,8 +116,5 @@ class Connect extends Middleware {
 
             this.runner.bagpipes.play(pipe, context);
         });
-
-    }
+    };
 }
-
-export default Connect;

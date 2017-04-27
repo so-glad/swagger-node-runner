@@ -1,2 +1,2 @@
 import create from './cors';
-export default create;
+module.exports = create;

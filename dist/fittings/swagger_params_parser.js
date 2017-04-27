@@ -1,9 +1,5 @@
 'use strict';
 
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-
 var _debug2 = require('debug');
 
 var _debug3 = _interopRequireDefault(_debug2);
@@ -138,7 +134,7 @@ var skipParse = function skipParse(options, req) {
     return typeof options.type !== 'function' && !Boolean((0, _typeIs.is)(req, options.type));
 };
 
-var create = function create(fittingDef, bagpipes) {
+var create = function create(fittingDef) {
     debug('config: %j', fittingDef);
 
     _lodash2.default.defaults(fittingDef, {
@@ -161,7 +157,8 @@ var create = function create(fittingDef, bagpipes) {
         var req = context.request;
         parseRequest(req, fittingDef, function (err) {
             if (err) {
-                /* istanbul ignore next */return next(err);
+                /* istanbul ignore next */
+                return next(err);
             }
             var params = req.swagger.params = {};
             req.swagger.operation.parameterObjects.forEach(function (parameter) {

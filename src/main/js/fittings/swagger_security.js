@@ -104,4 +104,4 @@ const create = (fittingDef, bagpipes) => {
     };
 };
 
-export default create;
+module.exports = create;

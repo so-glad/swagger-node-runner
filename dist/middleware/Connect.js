@@ -51,7 +51,6 @@ var Connect = function (_Middleware) {
             // flow back to connect pipe
 
             var operation = _this.runner.getOperation(req);
-
             if (!operation) {
                 var path = _this.runner.getPath(req);
                 if (!path) {
@@ -95,6 +94,7 @@ var Connect = function (_Middleware) {
                     headers: {},
                     output: undefined
                 };
+                console.error(context);
                 //function finishConnect
                 context._finish = function () {
                     // must have arity of 2

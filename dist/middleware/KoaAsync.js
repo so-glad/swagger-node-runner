@@ -58,7 +58,7 @@ var _class = function (_Abstract) {
                         switch (_context3.prev = _context3.next) {
                             case 0:
                                 req = ctx.request;
-                                res = ctx.response;
+                                res = ctx.res;
                                 operation = _this.runner.getOperation(req);
 
                                 if (operation) {

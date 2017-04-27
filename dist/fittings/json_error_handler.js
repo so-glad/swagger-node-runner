@@ -1,9 +1,5 @@
 'use strict';
 
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-
 var _debug2 = require('debug');
 
 var _debug3 = _interopRequireDefault(_debug2);
