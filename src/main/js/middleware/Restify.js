@@ -1,15 +1,30 @@
 'use strict';
 
 
-import Connect from './Connect';
+import Abstract from './Abstract';
 const ALL_METHODS = ['del', 'get', 'head', 'opts', 'post', 'put', 'patch'];
 
 
-export default class extends Connect {
+export default class extends Abstract {
 
     constructor(runner){
         super(runner);
     }
+
+    middleware = (req, res, callback) => {
+        try{
+            const operation = this.checkOperation(req, res);
+            if(!operation) {
+                return callback();
+            }
+            this.runner.applyMetadata(req, operation, () => {
+                this.afterOperation(req, res, callback);
+            });
+        } catch(e) {
+            return callback(e);
+        }
+    };
+
 
     register(app) {
         // this bit of oddness forces Restify to route all requests through the middleware

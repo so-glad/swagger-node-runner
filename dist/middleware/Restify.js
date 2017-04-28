@@ -8,9 +8,9 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
-var _Connect2 = require('./Connect');
+var _Abstract2 = require('./Abstract');
 
-var _Connect3 = _interopRequireDefault(_Connect2);
+var _Abstract3 = _interopRequireDefault(_Abstract2);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -22,13 +22,29 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
 var ALL_METHODS = ['del', 'get', 'head', 'opts', 'post', 'put', 'patch'];
 
-var _class = function (_Connect) {
-    _inherits(_class, _Connect);
+var _class = function (_Abstract) {
+    _inherits(_class, _Abstract);
 
     function _class(runner) {
         _classCallCheck(this, _class);
 
-        return _possibleConstructorReturn(this, (_class.__proto__ || Object.getPrototypeOf(_class)).call(this, runner));
+        var _this = _possibleConstructorReturn(this, (_class.__proto__ || Object.getPrototypeOf(_class)).call(this, runner));
+
+        _this.middleware = function (req, res, callback) {
+            try {
+                var operation = _this.checkOperation(req, res);
+                if (!operation) {
+                    return callback();
+                }
+                _this.runner.applyMetadata(req, operation, function () {
+                    _this.afterOperation(req, res, callback);
+                });
+            } catch (e) {
+                return callback(e);
+            }
+        };
+
+        return _this;
     }
 
     _createClass(_class, [{
@@ -58,6 +74,6 @@ var _class = function (_Connect) {
     }]);
 
     return _class;
-}(_Connect3.default);
+}(_Abstract3.default);
 
 exports.default = _class;

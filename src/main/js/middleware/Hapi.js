@@ -1,74 +1,80 @@
 'use strict';
 
-module.exports = init;
 
-var debug = require('debug')('swagger:hapi_middleware');
+import {version} from '../../../../package';
 
-function init(runner) {
-  return new Hapi(runner);
-}
+import Abstract from './Abstract';
+const debug = require('debug')('swagger:hapi_middleware');
 
-function Hapi(runner) {
-  this.runner = runner;
-  this.config = runner.config;
-
-  var connectMiddleware = runner.connectMiddleware();
-  var chain = connectMiddleware.middleware();
-
-  this.plugin = {
-    register: function(server, options, next) {
-
-      server.ext('onRequest', function(request, reply) {
-
-        var req = request.raw.req;
-        var res = newResponse(reply);
-
-        chain(req, res, function(err) {
-          if (err) {
-            if (err.statusCode) { res.statusCode = err.statusCode; }
-            res.end(err.message);
-          }
-          res.finish();
-        });
-      });
-
-      /* istanbul ignore next */
-      server.on('request-error', function (request, err) {
-        debug('Request: %s error: %s', request.id, err.stack);
-      });
-
-      next();
+class Response {
+    reply = null;
+    headers = {};
+    statusCode = null;
+    res = null;
+    constructor(reply) {
+        this.reply = reply;
     }
-  };
-  this.plugin.register.attributes = { name: 'swagger-node-runner', version: version() };
-}
 
-function version() {
-  return require('../package.json').version;
-}
+    getHeader = (name) => {
+        return this.headers[name.toLowerCase()];
+    };
 
-function newResponse(reply) {
-  return {
-    getHeader: function getHeader(name) {
-      return this.headers ? this.headers[name.toLowerCase()] : null;
-    },
-    setHeader: function setHeader(name, value) {
-      if (!this.headers) { this.headers = {}; }
-      this.headers[name.toLowerCase()] = value;
-    },
-    end: function end(string) {
-      this.res = reply(string);
-      this.res.statusCode = this.statusCode;
-      if (this.headers) {
-        for (var header in this.headers) {
-          this.res.header(header, this.headers[header]);
+    setHeader = (name, value) => {
+        this.headers[name.toLowerCase()] = value;
+    };
+
+    end = (string) => {
+        this.res = this.reply(string);
+        this.res.statusCode = this.statusCode;
+        if (this.headers) {
+            for (const header in this.headers) {
+                this.res.header(header, this.headers[header]);
+            }
         }
-      }
-    },
-    finish: function finish() {
-      if (!this.res) {
-        reply.continue();
-      }
+    };
+
+    finish = () => {
+        if (!this.res) {
+            this.reply.continue();
+        }
     }
-  };
+}
+
+export default class extends Abstract {
+
+    name = 'swagger-node-runner';
+
+    version = version;
+
+    constructor(runner) {
+        super(runner);
+    }
+
+    register = (server, options, next) => {
+        server.ext('onRequest', (request, reply) => {
+
+            const req = request.raw.req;
+            const res = new Response(reply);
+
+            try{
+                const operation = this.checkOperation(req, res);
+                if(!operation) {
+                    return next();
+                }
+                this.runner.applyMetadata(req, operation, () => {
+                    this.afterOperation(req, res, next);
+                    res.finish();
+                });
+            } catch(e) {
+                return next(e);
+            }
+            /* istanbul ignore next */
+            server.on('request-error', function (request, err) {
+                debug('Request: %s error: %s', request.id, err.stack);
+            });
+
+            next();
+        });
+    };
+    // register.attributes = { name: '', version: version }
 }
