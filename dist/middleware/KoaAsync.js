@@ -1,3 +1,4 @@
+
 'use strict';
 
 /**
@@ -35,7 +36,7 @@ var _class = function (_Abstract) {
 
         _this.middleware = function () {
             var _ref = _asyncToGenerator(regeneratorRuntime.mark(function _callee(ctx, next) {
-                var req, res, operation;
+                var req, res, pipe, context;
                 return regeneratorRuntime.wrap(function _callee$(_context) {
                     while (1) {
                         switch (_context.prev = _context.next) {
@@ -43,33 +44,41 @@ var _class = function (_Abstract) {
                                 req = ctx.request;
                                 res = ctx.res;
                                 _context.prev = 2;
-                                operation = _this.checkOperation(req, res);
+                                pipe = _this.pipe(req, res);
 
-                                if (operation) {
-                                    _context.next = 6;
+                                if (pipe) {
+                                    _context.next = 8;
                                     break;
                                 }
 
-                                return _context.abrupt('return', next());
+                                _context.next = 7;
+                                return next();
 
-                            case 6:
-                                _this.runner.applyMetadata(req, operation, function () {
-                                    _this.afterOperation(req, res, next);
-                                });
-                                _context.next = 12;
+                            case 7:
+                                return _context.abrupt('return', _context.sent);
+
+                            case 8:
+                                context = _this.pipeContext(req, res, next);
+
+                                _this.runner.bagpipes.play(pipe, context);
+                                _context.next = 17;
                                 break;
 
-                            case 9:
-                                _context.prev = 9;
-                                _context.t0 = _context['catch'](2);
-                                return _context.abrupt('return', next(_context.t0));
-
                             case 12:
+                                _context.prev = 12;
+                                _context.t0 = _context['catch'](2);
+                                _context.next = 16;
+                                return next(_context.t0);
+
+                            case 16:
+                                return _context.abrupt('return', _context.sent);
+
+                            case 17:
                             case 'end':
                                 return _context.stop();
                         }
                     }
-                }, _callee, _this2, [[2, 9]]);
+                }, _callee, _this2, [[2, 12]]);
             }));
 
             return function (_x, _x2) {

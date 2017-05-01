@@ -1,5 +1,5 @@
-'use strict';
 
+'use strict';
 
 /**
  * @author palmtale
@@ -133,7 +133,7 @@ class Middleware {
         app.use(this.middleware);
     };
 
-    checkOperation = (req, res) => {
+    pipe = (req, res) => {
         const operation = this.runner.getOperation(req);
         if (!operation) {
             const path = this.runner.getPath(req);
@@ -151,16 +151,17 @@ class Middleware {
                 throw err;
             }
         }
-        return operation;
-    };
-
-    afterOperation = (req, res, next) => {
+        this.runner.applyMetadata(req, operation);
         const pipe = this.runner.getPipe(req);
         if (!pipe) {
             const err = new Error('No implementation found for this path.');
             err.statusCode = 405;
             throw err;
         }
+        return pipe;
+    };
+
+    pipeContext = (req, res, next) => {
         const context = {
             // system values
             _errorHandler: this.runner.defaultErrorHandler(),
@@ -180,8 +181,7 @@ class Middleware {
         if (listenerCount) {
             hookResponseForValidation(context, this.runner);
         }
-
-        this.runner.bagpipes.play(pipe, context);
+        return context;
     };
 }
 

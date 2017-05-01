@@ -76,14 +76,13 @@ var _class = function (_Abstract) {
                 var res = new Response(reply);
 
                 try {
-                    var operation = _this2.checkOperation(req, res);
-                    if (!operation) {
-                        return next();
+                    var pipe = _this2.pipe(req, res);
+                    if (!pipe) {
+                        next();
                     }
-                    _this2.runner.applyMetadata(req, operation, function () {
-                        _this2.afterOperation(req, res, next);
-                        res.finish();
-                    });
+                    var context = _this2.pipeContext(req, res, next);
+                    _this2.runner.bagpipes.play(pipe, context);
+                    res.finish();
                 } catch (e) {
                     return next(e);
                 }

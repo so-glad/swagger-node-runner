@@ -13,13 +13,12 @@ export default class extends Abstract {
 
     middleware = (req, res, callback) => {
         try{
-            const operation = this.checkOperation(req, res);
-            if(!operation) {
+            const pipe = this.pipe(req,res);
+            if(!pipe) {
                 return callback();
             }
-            this.runner.applyMetadata(req, operation, () => {
-                this.afterOperation(req, res, callback);
-            });
+            const context = this.pipeContext(req, res, callback);
+            this.runner.bagpipes.play(pipe, context);
         } catch(e) {
             return callback(e);
         }

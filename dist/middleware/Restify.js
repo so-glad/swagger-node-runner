@@ -32,13 +32,12 @@ var _class = function (_Abstract) {
 
         _this.middleware = function (req, res, callback) {
             try {
-                var operation = _this.checkOperation(req, res);
-                if (!operation) {
+                var pipe = _this.pipe(req, res);
+                if (!pipe) {
                     return callback();
                 }
-                _this.runner.applyMetadata(req, operation, function () {
-                    _this.afterOperation(req, res, callback);
-                });
+                var context = _this.pipeContext(req, res, callback);
+                _this.runner.bagpipes.play(pipe, context);
             } catch (e) {
                 return callback(e);
             }

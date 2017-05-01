@@ -1,7 +1,7 @@
 'use strict';
 
 
-import {version} from '../../../../package';
+import {version} from '../../package';
 
 import Abstract from './Abstract';
 const debug = require('debug')('swagger:hapi_middleware');
@@ -57,14 +57,13 @@ export default class extends Abstract {
             const res = new Response(reply);
 
             try{
-                const operation = this.checkOperation(req, res);
-                if(!operation) {
-                    return next();
+                const pipe = this.pipe(req,res);
+                if(!pipe) {
+                    next();
                 }
-                this.runner.applyMetadata(req, operation, () => {
-                    this.afterOperation(req, res, next);
-                    res.finish();
-                });
+                const context = this.pipeContext(req, res, next);
+                this.runner.bagpipes.play(pipe, context);
+                res.finish();
             } catch(e) {
                 return next(e);
             }

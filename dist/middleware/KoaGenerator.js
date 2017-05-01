@@ -1,3 +1,4 @@
+
 'use strict';
 
 /**
@@ -30,9 +31,7 @@ var _class = function (_Abstract) {
         var _this = _possibleConstructorReturn(this, (_class.__proto__ || Object.getPrototypeOf(_class)).call(this, runner));
 
         _this.middleware = regeneratorRuntime.mark(function _callee(next) {
-            var _this2 = this;
-
-            var req, res, operation;
+            var req, res, pipe, context;
             return regeneratorRuntime.wrap(function _callee$(_context) {
                 while (1) {
                     switch (_context.prev = _context.next) {
@@ -40,9 +39,9 @@ var _class = function (_Abstract) {
                             req = this.request;
                             res = this.response;
                             _context.prev = 2;
-                            operation = this.checkOperation(req, res);
+                            pipe = this.pipe(req, res);
 
-                            if (operation) {
+                            if (pipe) {
                                 _context.next = 8;
                                 break;
                             }
@@ -54,27 +53,27 @@ var _class = function (_Abstract) {
                             return _context.abrupt('return', _context.sent);
 
                         case 8:
-                            this.runner.applyMetadata(req, operation, function () {
-                                _this2.afterOperation(req, res, next);
-                            });
-                            _context.next = 16;
+                            context = this.pipeContext(req, res, next);
+
+                            this.runner.bagpipes.play(pipe, context);
+                            _context.next = 17;
                             break;
 
-                        case 11:
-                            _context.prev = 11;
+                        case 12:
+                            _context.prev = 12;
                             _context.t0 = _context['catch'](2);
-                            _context.next = 15;
+                            _context.next = 16;
                             return next(_context.t0);
 
-                        case 15:
+                        case 16:
                             return _context.abrupt('return', _context.sent);
 
-                        case 16:
+                        case 17:
                         case 'end':
                             return _context.stop();
                     }
                 }
-            }, _callee, this, [[2, 11]]);
+            }, _callee, this, [[2, 12]]);
         });
         return _this;
     }

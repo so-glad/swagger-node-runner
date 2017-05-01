@@ -1,3 +1,4 @@
+
 'use strict';
 
 /**
@@ -16,13 +17,12 @@ import bagpipes from 'bagpipes';
 import {EventEmitter} from 'events';
 
 
-import _connectMiddleware from './middleware/Connect';
+import ConnectMiddleware from './middleware/Connect';
 import ExpressMiddleware from './middleware/Express';
-import _restifyMiddleware from './middleware/Restify';
-import Koa1Middleware from './middleware/koa_generator_middleware';
+import RestifyMiddleware from './middleware/Restify';
 import KoaMiddleware from './middleware/KoaAsync';
-import _hapiMiddleware from './middleware/Hapi';
-import _sailsMiddleware from './middleware/Sails';
+import HapiMiddleware from './middleware/Hapi';
+import SailsMiddleware from './middleware/Sails';
 
 /*
  Runner properties:
@@ -46,14 +46,13 @@ import _sailsMiddleware from './middleware/Sails';
  securityHandlers
  */
 
-const debug = _debug('swagger');
-
 const SWAGGER_SELECTED_PIPE = 'x-swagger-pipe';
 const SWAGGER_ROUTER_CONTROLLER = 'x-swagger-router-controller';
 const DEFAULT_FITTINGS_DIRS = ['api/fittings'];
 const DEFAULT_VIEWS_DIRS = ['api/views'];
 const DEFAULT_SWAGGER_FILE = 'api/swagger/swagger.yaml'; // relative to appRoot
 
+const debug = _debug('swagger');
 /*
  SwaggerNode config priority:
  1. swagger_* environment vars
@@ -84,7 +83,8 @@ class Runner {
             if (!appJsConfig.configDir) {
                 appJsConfig.configDir = 'config';
             }
-            process.env.NODE_CONFIG_DIR = path.resolve(appJsConfig.appRoot, appJsConfig.configDir);
+            process.env.NODE_CONFIG_DIR
+                = path.resolve(appJsConfig.appRoot, appJsConfig.configDir);
         }
         this.config.swagger =
             Config.util.extendDeep(
@@ -98,11 +98,12 @@ class Runner {
     setupSway = async () => {
         const swayOpts = {
             definition: this.appJsConfig.swagger ||
-            this.appJsConfig.swaggerFile || this.resolveAppPath(DEFAULT_SWAGGER_FILE)
+            this.appJsConfig.swaggerFile ||
+            this.resolveAppPath(DEFAULT_SWAGGER_FILE)
         };
 
         debug('initializing Sway');
-        try{
+        try {
             const api = await sway.create(swayOpts);
 
             debug('validating api');
@@ -111,40 +112,40 @@ class Runner {
 
             let errors = validateResult.errors;
             if (errors && errors.length > 0) {
-            if (!this.config.swagger.enforceUniqueOperationId) {
-                errors = errors.filter(err => (err.code !== 'DUPLICATE_OPERATIONID'));
-            }
-            if (errors.length > 0) {
-                if (this.config.swagger.startWithErrors) {
-                    const errorText = JSON.stringify(errors);
-                    //TODO think logger would be better than console. Maybe some log facade framework use.
-                    console.error(errorText, 2);
-                } else {
-                    const err = new Error('Swagger validation errors:');
-                    err.validationErrors = errors;
-                    throw err;
+                if (!this.config.swagger.enforceUniqueOperationId) {
+                    errors = errors.filter(err => (err.code !== 'DUPLICATE_OPERATIONID'));
+                }
+                if (errors.length > 0) {
+                    if (this.config.swagger.startWithErrors) {
+                        const errorText = JSON.stringify(errors);
+                        //TODO think logger would be better than console. Maybe some log facade framework use.
+                        console.error(errorText, 2);
+                    } else {
+                        const err = new Error('Swagger validation errors:');
+                        err.validationErrors = errors;
+                        throw err;
+                    }
                 }
             }
-        }
 
             let warnings = validateResult.warnings;
             if (warnings && warnings.length > 0) {
-            const warningText = JSON.stringify(warnings);
-            if (this.config.swagger.startWithWarnings) {
-                console.error(warningText, 2);
-            } else {
-                const err = new Error('Swagger validation warnings:');
-                err.validationWarnings = warnings;
-                throw err;
+                const warningText = JSON.stringify(warnings);
+                if (this.config.swagger.startWithWarnings) {
+                    console.error(warningText, 2);
+                } else {
+                    const err = new Error('Swagger validation warnings:');
+                    err.validationWarnings = warnings;
+                    throw err;
+                }
             }
-        }
 
             this.api = api;
             this.swagger = api.definition;
             this.securityHandlers = this.appJsConfig.securityHandlers ||
-            this.appJsConfig.swaggerSecurityHandlers; // legacy name
+                this.appJsConfig.swaggerSecurityHandlers; // legacy name
             this.bagpipes = this.createPipes();
-        } catch(err) {
+        } catch (err) {
             console.error('Error in callback! Tossing to global error handler.', err.stack);
             if (err.validationErrors) {
                 console.error('Details: ');
@@ -164,7 +165,7 @@ class Runner {
     mount = (app) => {
         let middleware = null;
 
-        if(app.subdomainOffset === 2) { //KOA specification
+        if (app.subdomainOffset === 2) { //KOA specification
             middleware = new KoaMiddleware(this);
         } else {
             middleware = new ExpressMiddleware(this);
@@ -174,29 +175,27 @@ class Runner {
     };
 
     connectMiddleware = () => {
-        return _connectMiddleware(this);
+        return new ConnectMiddleware(this);
     };
 
-    expressMiddleware = this.connectMiddleware;
+    expressMiddleware = () => {
+        return new ExpressMiddleware(this);
+    };
 
     restifyMiddleware = () => {
-        return _restifyMiddleware(this);
+        return new RestifyMiddleware(this);
     };
 
     koaMiddleware = () => {
         return new KoaMiddleware(this);
     };
 
-    koa1Middleware = () => {
-        return new Koa1Middleware(this);
-    };
-
     sailsMiddleware = () => {
-        return _sailsMiddleware(this);
+        return new SailsMiddleware(this);
     };
 
-    hapiMiddleware = function hapiMiddleware() {
-        return _hapiMiddleware(this);
+    hapiMiddleware = () => {
+        return new HapiMiddleware(this);
     };
 
     defaultErrorHandler = () => {
@@ -219,7 +218,13 @@ class Runner {
     applyMetadata = (req, operation, cb) => {
         const swagger = req.swagger = {};
         swagger.operation = operation;
-        cb();
+        if(cb) {
+            cb(null, req);
+        } else {
+            return new Promise((resolved) => {
+                return resolved(req);
+            });
+        }
     };
 
     // must assign req.swagger (see #applyMetadata) before calling

@@ -33,13 +33,12 @@ var Connect = function (_Middleware) {
         return _ret = (_temp = (_this = _possibleConstructorReturn(this, (_ref = Connect.__proto__ || Object.getPrototypeOf(Connect)).call.apply(_ref, [this].concat(args))), _this), _this.middleware = function (req, res, next) {
             // flow back to connect pipe
             try {
-                var operation = _this.checkOperation(req, res);
-                if (!operation) {
-                    return next();
+                var pipe = _this.pipe(req, res);
+                if (!pipe) {
+                    next();
                 }
-                _this.runner.applyMetadata(req, operation, function () {
-                    _this.afterOperation(req, res, next);
-                });
+                var context = _this.pipeContext(req, res, next);
+                _this.runner.bagpipes.play(pipe, context);
             } catch (e) {
                 return next(e);
             }

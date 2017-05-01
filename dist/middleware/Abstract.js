@@ -1,3 +1,4 @@
+
 'use strict';
 
 /**
@@ -151,7 +152,7 @@ var Middleware = function Middleware(runner) {
         app.use(_this.middleware);
     };
 
-    this.checkOperation = function (req, res) {
+    this.pipe = function (req, res) {
         var operation = _this.runner.getOperation(req);
         if (!operation) {
             var path = _this.runner.getPath(req);
@@ -171,16 +172,17 @@ var Middleware = function Middleware(runner) {
                 throw err;
             }
         }
-        return operation;
-    };
-
-    this.afterOperation = function (req, res, next) {
+        _this.runner.applyMetadata(req, operation);
         var pipe = _this.runner.getPipe(req);
         if (!pipe) {
-            var err = new Error('No implementation found for this path.');
-            err.statusCode = 405;
-            throw err;
+            var _err = new Error('No implementation found for this path.');
+            _err.statusCode = 405;
+            throw _err;
         }
+        return pipe;
+    };
+
+    this.pipeContext = function (req, res, next) {
         var context = {
             // system values
             _errorHandler: _this.runner.defaultErrorHandler(),
@@ -199,8 +201,7 @@ var Middleware = function Middleware(runner) {
         if (listenerCount) {
             hookResponseForValidation(context, _this.runner);
         }
-
-        _this.runner.bagpipes.play(pipe, context);
+        return context;
     };
 
     this.runner = runner;

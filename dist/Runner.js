@@ -1,3 +1,4 @@
+
 'use strict';
 
 /**
@@ -53,10 +54,6 @@ var _Restify = require('./middleware/Restify');
 
 var _Restify2 = _interopRequireDefault(_Restify);
 
-var _koa_generator_middleware = require('./middleware/koa_generator_middleware');
-
-var _koa_generator_middleware2 = _interopRequireDefault(_koa_generator_middleware);
-
 var _KoaAsync = require('./middleware/KoaAsync');
 
 var _KoaAsync2 = _interopRequireDefault(_KoaAsync);
@@ -97,14 +94,13 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
  securityHandlers
  */
 
-var debug = (0, _debug3.default)('swagger');
-
 var SWAGGER_SELECTED_PIPE = 'x-swagger-pipe';
 var SWAGGER_ROUTER_CONTROLLER = 'x-swagger-router-controller';
 var DEFAULT_FITTINGS_DIRS = ['api/fittings'];
 var DEFAULT_VIEWS_DIRS = ['api/views'];
 var DEFAULT_SWAGGER_FILE = 'api/swagger/swagger.yaml'; // relative to appRoot
 
+var debug = (0, _debug3.default)('swagger');
 /*
  SwaggerNode config priority:
  1. swagger_* environment vars
@@ -267,29 +263,27 @@ var Runner = function () {
         };
 
         this.connectMiddleware = function () {
-            return (0, _Connect2.default)(_this);
+            return new _Connect2.default(_this);
         };
 
-        this.expressMiddleware = this.connectMiddleware;
+        this.expressMiddleware = function () {
+            return new _Express2.default(_this);
+        };
 
         this.restifyMiddleware = function () {
-            return (0, _Restify2.default)(_this);
+            return new _Restify2.default(_this);
         };
 
         this.koaMiddleware = function () {
             return new _KoaAsync2.default(_this);
         };
 
-        this.koa1Middleware = function () {
-            return new _koa_generator_middleware2.default(_this);
-        };
-
         this.sailsMiddleware = function () {
-            return (0, _Sails2.default)(_this);
+            return new _Sails2.default(_this);
         };
 
-        this.hapiMiddleware = function hapiMiddleware() {
-            return (0, _Hapi2.default)(this);
+        this.hapiMiddleware = function () {
+            return new _Hapi2.default(_this);
         };
 
         this.defaultErrorHandler = function () {
@@ -311,7 +305,13 @@ var Runner = function () {
         this.applyMetadata = function (req, operation, cb) {
             var swagger = req.swagger = {};
             swagger.operation = operation;
-            cb();
+            if (cb) {
+                cb(null, req);
+            } else {
+                return new Promise(function (resolved) {
+                    return resolved(req);
+                });
+            }
         };
 
         this.getPipe = function (req) {

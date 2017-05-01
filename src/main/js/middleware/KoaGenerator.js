@@ -1,3 +1,4 @@
+
 'use strict';
 
 /**
@@ -18,13 +19,12 @@ export default class extends Abstract {
         const req = this.request;
         const res = this.response;
         try{
-            const operation = this.checkOperation(req, res);
-            if(!operation) {
+            const pipe = this.pipe(req,res);
+            if(!pipe) {
                 return yield next();
             }
-            this.runner.applyMetadata(req, operation, () => {
-                this.afterOperation(req, res, next);
-            });
+            const context = this.pipeContext(req, res, next);
+            this.runner.bagpipes.play(pipe, context);
         } catch(e) {
             return yield next(e);
         }
