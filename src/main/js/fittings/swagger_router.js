@@ -84,7 +84,7 @@ const create = (fittingDef, bagpipes) => {
                 debug('running controller, as %s', operation.controllerInterface);
                 return operation.controllerInterface === 'pipe'
                     ? controllerFunction(context, cb)
-                    : controllerFunction(context.request, context.response, cb);
+                    : (context.promise = controllerFunction(context.request, context.response, cb));
             }
             const msg = util.format('Controller %s doesn\'t export handler function %s', controllerName, operationId);
             if (mockMode) {

@@ -84,7 +84,7 @@ var create = function create(fittingDef, bagpipes) {
                     debug('auto-detected interface-type for operation "%s" at [%s] as "%s"', operationId, operation.pathToDefinition, operation.controllerInterface);
                 }
                 debug('running controller, as %s', operation.controllerInterface);
-                return operation.controllerInterface === 'pipe' ? controllerFunction(context, cb) : controllerFunction(context.request, context.response, cb);
+                return operation.controllerInterface === 'pipe' ? controllerFunction(context, cb) : context.promise = controllerFunction(context.request, context.response, cb);
             }
             var msg = _util2.default.format('Controller %s doesn\'t export handler function %s', controllerName, operationId);
             if (mockMode) {

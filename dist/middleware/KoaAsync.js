@@ -47,7 +47,7 @@ var _class = function (_Abstract) {
                                 pipe = _this.pipe(req, res);
 
                                 if (pipe) {
-                                    _context.next = 8;
+                                    _context.next = 7;
                                     break;
                                 }
 
@@ -55,30 +55,34 @@ var _class = function (_Abstract) {
                                 return next();
 
                             case 7:
-                                return _context.abrupt('return', _context.sent);
-
-                            case 8:
                                 context = _this.pipeContext(req, res, next);
 
                                 _this.runner.bagpipes.play(pipe, context);
-                                _context.next = 17;
-                                break;
+
+                                if (!context.promise) {
+                                    _context.next = 12;
+                                    break;
+                                }
+
+                                _context.next = 12;
+                                return context.promise;
 
                             case 12:
-                                _context.prev = 12;
+                                _context.next = 18;
+                                break;
+
+                            case 14:
+                                _context.prev = 14;
                                 _context.t0 = _context['catch'](2);
-                                _context.next = 16;
+                                _context.next = 18;
                                 return next(_context.t0);
 
-                            case 16:
-                                return _context.abrupt('return', _context.sent);
-
-                            case 17:
+                            case 18:
                             case 'end':
                                 return _context.stop();
                         }
                     }
-                }, _callee, _this2, [[2, 12]]);
+                }, _callee, _this2, [[2, 14]]);
             }));
 
             return function (_x, _x2) {

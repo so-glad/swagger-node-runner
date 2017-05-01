@@ -21,12 +21,15 @@ export default class extends Abstract {
         try{
             const pipe = this.pipe(req,res);
             if(!pipe) {
-                return await next();
+                await next();
             }
             const context = this.pipeContext(req, res, next);
             this.runner.bagpipes.play(pipe, context);
+            if(context.promise) {
+                await context.promise;
+            }
         } catch(e) {
-            return await next(e);
+            await next(e);
         }
     };
 }
