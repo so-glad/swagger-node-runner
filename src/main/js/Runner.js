@@ -17,7 +17,6 @@ import bagpipes from 'bagpipes';
 import {EventEmitter} from 'events';
 
 
-import ConnectMiddleware from './middleware/Connect';
 import ExpressMiddleware from './middleware/Express';
 import RestifyMiddleware from './middleware/Restify';
 import KoaMiddleware from './middleware/KoaAsync';
@@ -105,7 +104,7 @@ class Runner {
         debug('initializing Sway');
         try {
             const api = await sway.create(swayOpts);
-
+            console.info(api);
             debug('validating api');
             const validateResult = api.validate();
             debug('done validating api. errors: %d, warnings: %d', validateResult.errors.length, validateResult.warnings.length);
@@ -160,8 +159,6 @@ class Runner {
         }
     };
 
-    resolveAppPath = (to) => path.resolve(this.appJsConfig.appRoot, to);
-
     mount = (app) => {
         let middleware = null;
 
@@ -173,30 +170,47 @@ class Runner {
 
         middleware.register(app);
     };
-
-    connectMiddleware = () => {
-        return new ConnectMiddleware(this);
+    // adds req.swagger to the request
+    applyMetadata = (req, operation, cb) => {
+        const swagger = req.swagger = {};
+        swagger.operation = operation;
+        if(cb) {
+            cb(null, req);
+        } else {
+            return new Promise((resolved) => {
+                return resolved(req);
+            });
+        }
     };
 
-    expressMiddleware = () => {
-        return new ExpressMiddleware(this);
-    };
+    resolveAppPath = (to) => path.resolve(this.appJsConfig.appRoot, to);
 
-    restifyMiddleware = () => {
-        return new RestifyMiddleware(this);
-    };
-
-    koaMiddleware = () => {
-        return new KoaMiddleware(this);
-    };
-
-    sailsMiddleware = () => {
-        return new SailsMiddleware(this);
-    };
-
-    hapiMiddleware = () => {
-        return new HapiMiddleware(this);
-    };
+    readEnvConfig() {
+        const config = {};
+        _.each(process.env, (value, key) => {
+            const split = key.split('_');
+            if (split[0] === 'swagger') {
+                let configItem = config;
+                for (let i = 1; i < split.length; i++) {
+                    const subKey = split[i];
+                    if (i < split.length - 1) {
+                        if (!configItem[subKey]) {
+                            configItem[subKey] = {};
+                        }
+                        configItem = configItem[subKey];
+                    } else {
+                        try {
+                            configItem[subKey] = JSON.parse(value);
+                        } catch (err) {
+                            configItem[subKey] = value;
+                        }
+                    }
+                }
+            }
+        });
+        debug('loaded env vars: %j', config);
+        return config;
+    }
 
     defaultErrorHandler = () => {
         const defaultErrorFitting = (context, next) => {
@@ -213,20 +227,6 @@ class Runner {
     getPath = (req) => {
         return this.api.getPath(req);
     };
-
-    // adds req.swagger to the request
-    applyMetadata = (req, operation, cb) => {
-        const swagger = req.swagger = {};
-        swagger.operation = operation;
-        if(cb) {
-            cb(null, req);
-        } else {
-            return new Promise((resolved) => {
-                return resolved(req);
-            });
-        }
-    };
-
     // must assign req.swagger (see #applyMetadata) before calling
     getPipe = (req) => {
         const operation = req.swagger.operation;
@@ -328,32 +328,21 @@ class Runner {
         return bagpipes.create(pipesDefs, pipesConfig);
     };
 
-    readEnvConfig() {
-        const config = {};
-        _.each(process.env, (value, key) => {
-            const split = key.split('_');
-            if (split[0] === 'swagger') {
-                let configItem = config;
-                for (let i = 1; i < split.length; i++) {
-                    const subKey = split[i];
-                    if (i < split.length - 1) {
-                        if (!configItem[subKey]) {
-                            configItem[subKey] = {};
-                        }
-                        configItem = configItem[subKey];
-                    } else {
-                        try {
-                            configItem[subKey] = JSON.parse(value);
-                        } catch (err) {
-                            configItem[subKey] = value;
-                        }
-                    }
-                }
-            }
-        });
-        debug('loaded env vars: %j', config);
-        return config;
-    }
+    restifyMiddleware = () => {
+        return new RestifyMiddleware(this);
+    };
+
+    koaMiddleware = () => {
+        return new KoaMiddleware(this);
+    };
+
+    sailsMiddleware = () => {
+        return new SailsMiddleware(this);
+    };
+
+    hapiMiddleware = () => {
+        return new HapiMiddleware(this);
+    };
 }
 
 util.inherits(Runner, EventEmitter);

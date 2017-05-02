@@ -1,5 +1,5 @@
 .babelrc
-.eslintrc.json
+.eslintrc
 .gitignore
 .npmignore
 .travis.yml
