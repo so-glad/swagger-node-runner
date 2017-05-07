@@ -1,4 +1,3 @@
-
 'use strict';
 
 /**
@@ -10,7 +9,7 @@
 import _ from 'lodash';
 import _debug from 'debug';
 import path from 'path';
-import util from 'util';
+// import util from 'util';
 import Config from 'config';
 import sway from 'sway';
 import bagpipes from 'bagpipes';
@@ -58,8 +57,10 @@ const debug = _debug('swagger');
  2. config passed to create()
  3. read from swagger node in default.yaml in config directory
  4. defaults in this file
+
+ // util.inherits(Runner, EventEmitter);
  */
-class Runner {
+export default class Runner extends EventEmitter {
 
     config = Config.util.cloneDeep(Config);
     appJsConfig = null;
@@ -75,7 +76,7 @@ class Runner {
     };
 
     constructor(appJsConfig) {
-        EventEmitter.call(this);
+        super();
         this.appJsConfig = appJsConfig;
         // don't override if env var already set
         if (!process.env.NODE_CONFIG_DIR) {
@@ -104,7 +105,7 @@ class Runner {
         debug('initializing Sway');
         try {
             const api = await sway.create(swayOpts);
-            console.info(api);
+
             debug('validating api');
             const validateResult = api.validate();
             debug('done validating api. errors: %d, warnings: %d', validateResult.errors.length, validateResult.warnings.length);
@@ -174,7 +175,7 @@ class Runner {
     applyMetadata = (req, operation, cb) => {
         const swagger = req.swagger = {};
         swagger.operation = operation;
-        if(cb) {
+        if (cb) {
             cb(null, req);
         } else {
             return new Promise((resolved) => {
@@ -189,21 +190,22 @@ class Runner {
         const config = {};
         _.each(process.env, (value, key) => {
             const split = key.split('_');
-            if (split[0] === 'swagger') {
-                let configItem = config;
-                for (let i = 1; i < split.length; i++) {
-                    const subKey = split[i];
-                    if (i < split.length - 1) {
-                        if (!configItem[subKey]) {
-                            configItem[subKey] = {};
-                        }
-                        configItem = configItem[subKey];
-                    } else {
-                        try {
-                            configItem[subKey] = JSON.parse(value);
-                        } catch (err) {
-                            configItem[subKey] = value;
-                        }
+            if (split[0] !== 'swagger') {
+                return;
+            }
+            let configItem = config;
+            for (let i = 1; i < split.length; i++) {
+                const subKey = split[i];
+                if (i < split.length - 1) {
+                    if (!configItem[subKey]) {
+                        configItem[subKey] = {};
+                    }
+                    configItem = configItem[subKey];
+                } else {
+                    try {
+                        configItem[subKey] = JSON.parse(value);
+                    } catch (err) {
+                        configItem[subKey] = value;
                     }
                 }
             }
@@ -345,6 +347,4 @@ class Runner {
     };
 }
 
-util.inherits(Runner, EventEmitter);
-
-export default Runner;
+module.exports = Runner;

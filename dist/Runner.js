@@ -1,4 +1,3 @@
-
 'use strict';
 
 /**
@@ -24,10 +23,6 @@ var _path = require('path');
 
 var _path2 = _interopRequireDefault(_path);
 
-var _util = require('util');
-
-var _util2 = _interopRequireDefault(_util);
-
 var _config = require('config');
 
 var _config2 = _interopRequireDefault(_config);
@@ -41,10 +36,6 @@ var _bagpipes = require('bagpipes');
 var _bagpipes2 = _interopRequireDefault(_bagpipes);
 
 var _events = require('events');
-
-var _Connect = require('./middleware/Connect');
-
-var _Connect2 = _interopRequireDefault(_Connect);
 
 var _Express = require('./middleware/Express');
 
@@ -71,6 +62,12 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+// import util from 'util';
+
 
 /*
  Runner properties:
@@ -107,26 +104,32 @@ var debug = (0, _debug3.default)('swagger');
  2. config passed to create()
  3. read from swagger node in default.yaml in config directory
  4. defaults in this file
+
+ // util.inherits(Runner, EventEmitter);
  */
 
-var Runner = function () {
+var Runner = function (_EventEmitter) {
+    _inherits(Runner, _EventEmitter);
+
     function Runner(appJsConfig) {
-        var _this = this;
+        var _this2 = this;
 
         _classCallCheck(this, Runner);
 
-        this.config = _config2.default.util.cloneDeep(_config2.default);
-        this.appJsConfig = null;
-        this.api = null;
-        this.swagger = null;
-        this.securityHandlers = null;
-        this.bagpipes = null;
-        this.swaggerConfigDefaults = {
+        var _this = _possibleConstructorReturn(this, (Runner.__proto__ || Object.getPrototypeOf(Runner)).call(this));
+
+        _this.config = _config2.default.util.cloneDeep(_config2.default);
+        _this.appJsConfig = null;
+        _this.api = null;
+        _this.swagger = null;
+        _this.securityHandlers = null;
+        _this.bagpipes = null;
+        _this.swaggerConfigDefaults = {
             enforceUniqueOperationId: false,
             startWithErrors: false,
             startWithWarnings: true
         };
-        this.setupSway = _asyncToGenerator(regeneratorRuntime.mark(function _callee() {
+        _this.setupSway = _asyncToGenerator(regeneratorRuntime.mark(function _callee() {
             var swayOpts, api, validateResult, errors, errorText, err, warnings, warningText, _err, i;
 
             return regeneratorRuntime.wrap(function _callee$(_context) {
@@ -242,14 +245,10 @@ var Runner = function () {
                             return _context.stop();
                     }
                 }
-            }, _callee, _this, [[2, 37]]);
+            }, _callee, _this2, [[2, 37]]);
         }));
 
-        this.resolveAppPath = function (to) {
-            return _path2.default.resolve(_this.appJsConfig.appRoot, to);
-        };
-
-        this.mount = function (app) {
+        _this.mount = function (app) {
             var middleware = null;
 
             if (app.subdomainOffset === 2) {
@@ -262,47 +261,7 @@ var Runner = function () {
             middleware.register(app);
         };
 
-        this.connectMiddleware = function () {
-            return new _Connect2.default(_this);
-        };
-
-        this.expressMiddleware = function () {
-            return new _Express2.default(_this);
-        };
-
-        this.restifyMiddleware = function () {
-            return new _Restify2.default(_this);
-        };
-
-        this.koaMiddleware = function () {
-            return new _KoaAsync2.default(_this);
-        };
-
-        this.sailsMiddleware = function () {
-            return new _Sails2.default(_this);
-        };
-
-        this.hapiMiddleware = function () {
-            return new _Hapi2.default(_this);
-        };
-
-        this.defaultErrorHandler = function () {
-            var defaultErrorFitting = function defaultErrorFitting(context, next) {
-                debug('default error handler: %s', context.error.message);
-                next();
-            };
-            return _this.bagpipes.createPipeFromFitting(defaultErrorFitting, { name: 'defaultErrorHandler' });
-        };
-
-        this.getOperation = function (req) {
-            return _this.api.getOperation(req);
-        };
-
-        this.getPath = function (req) {
-            return _this.api.getPath(req);
-        };
-
-        this.applyMetadata = function (req, operation, cb) {
+        _this.applyMetadata = function (req, operation, cb) {
             var swagger = req.swagger = {};
             swagger.operation = operation;
             if (cb) {
@@ -314,7 +273,27 @@ var Runner = function () {
             }
         };
 
-        this.getPipe = function (req) {
+        _this.resolveAppPath = function (to) {
+            return _path2.default.resolve(_this.appJsConfig.appRoot, to);
+        };
+
+        _this.defaultErrorHandler = function () {
+            var defaultErrorFitting = function defaultErrorFitting(context, next) {
+                debug('default error handler: %s', context.error.message);
+                next();
+            };
+            return _this.bagpipes.createPipeFromFitting(defaultErrorFitting, { name: 'defaultErrorHandler' });
+        };
+
+        _this.getOperation = function (req) {
+            return _this.api.getOperation(req);
+        };
+
+        _this.getPath = function (req) {
+            return _this.api.getPath(req);
+        };
+
+        _this.getPipe = function (req) {
             var operation = req.swagger.operation;
             var path = operation ? operation.pathObject : _this.getPath(req);
             var config = _this.config.swagger;
@@ -358,7 +337,7 @@ var Runner = function () {
             return pipe;
         };
 
-        this.createPipes = function () {
+        _this.createPipes = function () {
             var config = _this.config.swagger;
 
             var fittingsDirs = (config.fittingsDirs || DEFAULT_FITTINGS_DIRS).map(function (dir) {
@@ -407,8 +386,23 @@ var Runner = function () {
             return _bagpipes2.default.create(pipesDefs, pipesConfig);
         };
 
-        _events.EventEmitter.call(this);
-        this.appJsConfig = appJsConfig;
+        _this.restifyMiddleware = function () {
+            return new _Restify2.default(_this);
+        };
+
+        _this.koaMiddleware = function () {
+            return new _KoaAsync2.default(_this);
+        };
+
+        _this.sailsMiddleware = function () {
+            return new _Sails2.default(_this);
+        };
+
+        _this.hapiMiddleware = function () {
+            return new _Hapi2.default(_this);
+        };
+
+        _this.appJsConfig = appJsConfig;
         // don't override if env var already set
         if (!process.env.NODE_CONFIG_DIR) {
             if (!appJsConfig.configDir) {
@@ -416,14 +410,11 @@ var Runner = function () {
             }
             process.env.NODE_CONFIG_DIR = _path2.default.resolve(appJsConfig.appRoot, appJsConfig.configDir);
         }
-        this.config.swagger = _config2.default.util.extendDeep(this.swaggerConfigDefaults, this.config.swagger, appJsConfig, this.readEnvConfig());
-        debug('resolved config: %j', this.config);
+        _this.config.swagger = _config2.default.util.extendDeep(_this.swaggerConfigDefaults, _this.config.swagger, appJsConfig, _this.readEnvConfig());
+        debug('resolved config: %j', _this.config);
+        return _this;
     }
-
     // adds req.swagger to the request
-
-
-    // must assign req.swagger (see #applyMetadata) before calling
 
 
     _createClass(Runner, [{
@@ -432,21 +423,22 @@ var Runner = function () {
             var config = {};
             _lodash2.default.each(process.env, function (value, key) {
                 var split = key.split('_');
-                if (split[0] === 'swagger') {
-                    var configItem = config;
-                    for (var i = 1; i < split.length; i++) {
-                        var subKey = split[i];
-                        if (i < split.length - 1) {
-                            if (!configItem[subKey]) {
-                                configItem[subKey] = {};
-                            }
-                            configItem = configItem[subKey];
-                        } else {
-                            try {
-                                configItem[subKey] = JSON.parse(value);
-                            } catch (err) {
-                                configItem[subKey] = value;
-                            }
+                if (split[0] !== 'swagger') {
+                    return;
+                }
+                var configItem = config;
+                for (var i = 1; i < split.length; i++) {
+                    var subKey = split[i];
+                    if (i < split.length - 1) {
+                        if (!configItem[subKey]) {
+                            configItem[subKey] = {};
+                        }
+                        configItem = configItem[subKey];
+                    } else {
+                        try {
+                            configItem[subKey] = JSON.parse(value);
+                        } catch (err) {
+                            configItem[subKey] = value;
                         }
                     }
                 }
@@ -454,11 +446,14 @@ var Runner = function () {
             debug('loaded env vars: %j', config);
             return config;
         }
+        // must assign req.swagger (see #applyMetadata) before calling
+
     }]);
 
     return Runner;
-}();
-
-_util2.default.inherits(Runner, _events.EventEmitter);
+}(_events.EventEmitter);
 
 exports.default = Runner;
+
+
+module.exports = Runner;
