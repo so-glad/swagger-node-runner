@@ -1,6 +1,12 @@
+.idea
+.eclipse
+.vscode
+.atom
+
 .babelrc
 .eslintrc
 .gitignore
 .npmignore
 .travis.yml
 src
+node_modules

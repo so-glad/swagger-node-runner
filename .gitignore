@@ -1,5 +1,8 @@
 # IDE files
 .idea
+.eclipse
+.vscode
+.atom
 
 # Logs
 logs
@@ -8,4 +11,4 @@ coverage
 
 build/Release
 node_modules
-#dist
+dist
