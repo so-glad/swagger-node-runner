@@ -16,7 +16,11 @@ export default class {
             throw new Error('callback is required');
         }
         if (!config || !config.appRoot) {
-            return callback(new Error('config.appRoot is required'));
+            if(callback) {
+                callback(new Error('config.appRoot is required'));
+            } else {
+                throw new Error('config.appRoot is required');
+            }
         }
         const runner = new Runner(config);
         try {
@@ -31,4 +35,3 @@ export default class {
         }
     };
 }
-

@@ -1,7 +1,7 @@
 {
-    "name": "swagger-node-runner",
-    "version": "0.7.2",
-    "description": "Swagger loader and middleware utilities",
+    "name": "swagger-runner",
+    "version": "1.0.2",
+    "description": "Swagger loader and middleware utilities for all kinds of web base such as koa,express,hapi,restify; Forked from swagger-node-runner@0.7.2(github:theganyo/swagger-node-runner), and rewrited as es2017 format",
     "keywords": [
         "swagger",
         "api",
@@ -10,14 +10,15 @@
         "swagger-express",
         "swagger-restify",
         "swagger-hapi",
-        "swagger-sails"
+        "swagger-sails",
+        "swagger-koa"
     ],
-    "author": "Scott Ganyo <sganyo@apigee.com>",
+    "author": "Palmtale <palmtale@glad.so>",
     "license": "MIT",
     "main": "lib/index.js",
     "repository": {
         "type": "git",
-        "url": "https://github.com/so-glad/swagger-node-runner.git"
+        "url": "https://github.com/so-glad/swagger-runner.git"
     },
     "dependencies": {
         "async": "^1.5.0",
@@ -56,6 +57,6 @@
         "coveralls": "node node_modules/istanbul/lib/cli.js cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -R spec test test/lib test/fittings && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js --verbose"
     },
     "publishConfig": {
-        "registry": "https://pub.glad.so/repository/sonpm-snapshot/"
+        "registry": "https://registry.npmjs.org/"
     }
 }

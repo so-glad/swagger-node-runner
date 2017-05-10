@@ -21,8 +21,9 @@ export default class extends Abstract {
         try{
             const pipe = this.pipe(req,res);
             if(!pipe) {
-                await next();
+                return await next();
             }
+            res.statusCode = 200;
             const context = this.pipeContext(req, res, next);
             this.runner.bagpipes.play(pipe, context);
             if(context.promise) {
